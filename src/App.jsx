@@ -116,7 +116,7 @@ function App() {
             {
               time: "19:20",
               passengers: 32,
-              avgPassengers: 30,
+              avgPassengers: 30,  
               occupancy: 71,
               trend: "down",
               busType: "Micro-ônibus",
