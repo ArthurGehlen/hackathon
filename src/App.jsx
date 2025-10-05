@@ -1,4 +1,7 @@
-import React from "react"; 
+import React from "react";
+import L from "leaflet";
+import { useEffect } from "react";
+import "leaflet/dist/leaflet.css";
 import { useState, useMemo } from "react";
 import {
   X,
@@ -116,7 +119,7 @@ function App() {
             {
               time: "19:20",
               passengers: 32,
-              avgPassengers: 30,  
+              avgPassengers: 30,
               occupancy: 71,
               trend: "down",
               busType: "Micro-ônibus",
@@ -128,6 +131,31 @@ function App() {
     }),
     []
   );
+
+  useEffect(() => {
+    if (activeTab !== "map") return;
+
+    const mapContainer = document.getElementById("map");
+
+    if (mapContainer && mapContainer._leaflet_id) {
+      return;
+    }
+
+    const map = L.map("map").setView([-24.7131, -53.7412], 13);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(map);
+
+    L.marker([-24.7131, -53.7412])
+      .addTo(map)
+      .bindPopup("Você está aqui")
+      .openPopup();
+
+    return () => {
+      map.remove();
+    };
+  }, [activeTab]);
 
   const currentBus = busOptions[selectedBus];
   const currentSchedules = currentBus.schedules[direction.toLowerCase()];
@@ -525,7 +553,7 @@ function App() {
         {activeTab === "analytics" && (
           <div className="bg-white rounded-lg shadow-sm p-8">
             <h2 className="text-2xl font-bold mb-6">Análise de Ocupação</h2>
-            
+
             <div className="mb-6">
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={peakHours}>
@@ -542,11 +570,20 @@ function App() {
 
             <div className="space-y-3">
               {peakHours.map((schedule, idx) => (
-                <div key={idx} className="flex items-center gap-4 bg-gray-50 rounded-lg p-4">
-                  <div className="text-2xl font-bold text-gray-400">#{idx + 1}</div>
+                <div
+                  key={idx}
+                  className="flex items-center gap-4 bg-gray-50 rounded-lg p-4"
+                >
+                  <div className="text-2xl font-bold text-gray-400">
+                    #{idx + 1}
+                  </div>
                   <div className="flex-1">
-                    <div className="font-semibold">{schedule.time} - {schedule.busType}</div>
-                    <div className="text-sm text-gray-600">{schedule.passengers} passageiros</div>
+                    <div className="font-semibold">
+                      {schedule.time} - {schedule.busType}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {schedule.passengers} passageiros
+                    </div>
                   </div>
                   <div className="text-xl font-bold">{schedule.occupancy}%</div>
                 </div>
@@ -556,21 +593,8 @@ function App() {
         )}
 
         {activeTab === "map" && (
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <MapPin size={48} className="mx-auto text-gray-400 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Mapa de Calor
-            </h3>
-            <p className="text-gray-600">
-              Integração com mapa de calor em desenvolvimento
-            </p>
-            <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-2xl mx-auto">
-              <p className="text-sm text-blue-900">
-                O mapa de calor mostrará visualmente os pontos de maior
-                concentração de passageiros ao longo da rota, permitindo
-                identificar padrões de uso e otimizar o serviço.
-              </p>
-            </div>
+          <div className="bg-white rounded-lg shadow-sm p-4">
+            <div id="map" className="w-full h-[600px] rounded-lg"></div>
           </div>
         )}
       </div>
